@@ -1,0 +1,49 @@
+name: Deploy FedZero Backend to AWS EC2
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'backend/**'
+      - 'ml/**'
+      - 'blockchain/**'
+      - 'requirements.txt'
+      - '.github/workflows/deploy-ec2.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Sync Backend Files to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          source: "backend/**,ml/**,blockchain/**,requirements.txt"
+          target: "/home/ubuntu/fedzero"
+          overwrite: true
+
+      - name: Restart Service and Verify via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            echo "--> Installing dependencies if needed..."
+            cd /home/ubuntu/fedzero
+            source venv/bin/activate
+            pip install -r requirements.txt --quiet
+            
+            echo "--> Restarting FedZero Backend Systemd Service..."
+            sudo systemctl restart fedzero
+            
+            echo "--> Verifying Service Status..."
+            sleep 2
+            sudo systemctl is-active --quiet fedzero && echo "✅ FedZero Backend Successfully Running!" || (sudo systemctl status fedzero --no-pager && exit 1)
