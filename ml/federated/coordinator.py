@@ -47,16 +47,17 @@ class FederatedCoordinator:
         # By default, start with ZERO pre-configured clients (awaits real devices or explicit simulation)
 
     def spawn_simulated_clients(self, count: int = 3) -> List[Dict[str, Any]]:
-        """Initializes simulated hospital participants on demand for local benchmark testing."""
+        """Initializes simulated hospital participants with NVIDIA Nemotron edge ingestion on demand."""
         from ml.datasets.synthetic_data import generate_synthetic_biomarkers
+        from ml.datasets.unstructured_data import get_unstructured_domain_batch
         import secrets
 
         tiers = [
-            ("RTX 4090", 24),
-            ("Apple M3 Max", 36),
+            ("RTX 4090 (Nemotron-3-Super)", 24),
+            ("NVIDIA H100 (Nemotron-3-Super)", 80),
+            ("Apple M3 Max (Nemotron-3-Nano)", 36),
+            ("Jetson Orin Nano (Nemotron-3-Nano)", 8),
             ("AWS A100 TensorCore", 80),
-            ("Jetson Orin Nano", 8),
-            ("Tesla V100 GPU", 16),
         ]
         created = []
         curr_sim_count = len([c for c in self.clients.values() if "sim_" in c.client_id or "node_" in c.client_id])
@@ -64,15 +65,18 @@ class FederatedCoordinator:
             idx = curr_sim_count + i + 1
             node_id = f"sim_node_{idx}"
             tier, vram = tiers[i % len(tiers)]
-            name = f"Simulated Node {idx} ({tier.split()[0]})"
+            name = f"Hospital Node {idx} ({tier.split()[0]})"
             wallet = f"0x{secrets.token_hex(20)}"
             data = generate_synthetic_biomarkers(n_samples=120, seed=1000 + idx)
+            # Ingest unstructured EHR clinical narratives via NVIDIA Nemotron
+            narratives = get_unstructured_domain_batch(domain="clinical_ehr", count=8)
             client = FederatedClient(
                 client_id=node_id,
                 name=name,
                 wallet_address=wallet,
                 private_data=data,
                 compute_tier=tier,
+                unstructured_narratives=narratives,
             )
             self.clients[node_id] = client
             created.append({
@@ -82,6 +86,7 @@ class FederatedCoordinator:
                 "hardware_tier": tier,
                 "vram_gb": vram,
                 "samples_count": 120,
+                "nebius_nvidia_ready": True,
             })
         return created
 

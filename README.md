@@ -18,6 +18,8 @@
   <a href="https://ezkl.zkonduit.com"><img src="https://img.shields.io/badge/Privacy-zkML%20%2F%20Halo2-3b82f6?style=flat-square" alt="zkML" /></a>
   <a href="https://nextjs.org"><img src="https://img.shields.io/badge/Frontend-Next.js%2014-000000?style=flat-square&logo=next.js" alt="Next.js" /></a>
   <a href="https://fastapi.tiangolo.com"><img src="https://img.shields.io/badge/Backend-FastAPI-009688?style=flat-square&logo=fastapi" alt="FastAPI" /></a>
+  <a href="https://tokenfactory.nebius.com"><img src="https://img.shields.io/badge/AI%20Cloud-Nebius%20Token%20Factory-00E599?style=flat-square" alt="Nebius Token Factory" /></a>
+  <a href="https://build.nvidia.com"><img src="https://img.shields.io/badge/Models-NVIDIA%20Nemotron-76B900?style=flat-square&logo=nvidia" alt="NVIDIA Nemotron" /></a>
   <img src="https://img.shields.io/badge/License-Apache%202.0%20%2F%20MIT-emerald?style=flat-square" alt="License" />
 </p>
 
@@ -51,6 +53,26 @@ Traditional collaborative machine learning forces institutions (hospitals, banks
    - **Solana**: Sub-second compute provider registry, dynamic reward calculations, anti-Sybil staking, and micro-incentive disbursements.
    - **Arbitrum (EVM L2)**: Formal zk-SNARK proof verification, on-chain model version lineage (`ModelRegistry.sol`), and Soulbound AI Contributor Passports (`AIPassport.sol`).
    - **Zcash**: Foundational cryptographic inspiration demonstrating shielded zero-knowledge validity in production.
+
+---
+
+## ⚡ Nebius Token Factory & NVIDIA Nemotron Integration
+
+FedZero couples decentralized edge nodes with high-performance cloud AI inference served on **Nebius Token Factory** (`https://api.tokenfactory.us-central1.nebius.com/v1`):
+
+| Model Variant | Host Infrastructure | Network Responsibility |
+| :--- | :--- | :--- |
+| **`nvidia/nemotron-3-nano`** | Nebius Token Factory | High-throughput, ultra-low latency edge schema formatting and PII redaction. |
+| **`nvidia/nemotron-3-super`** | Nebius Token Factory | Medical/financial domain entity extraction, structuring messy doctor notes into normalized 16-D biomarker feature tensors. |
+| **`nvidia/nemotron-3-ultra`** | Nebius Token Factory | Coordinator-level Byzantine governance agent: evaluates L2 gradient outliers, reasons over data drift vs. weight poisoning, and publishes automated consensus audits. |
+
+### Environment Setup:
+```bash
+# Add to .env or export in shell:
+export NEBIUS_API_KEY="your_nebius_token_factory_key"
+export NEBIUS_BASE_URL="https://api.tokenfactory.us-central1.nebius.com/v1"
+```
+*(If no API key is provided, FedZero automatically operates in local simulated reserve mode with 100% test uptime).*
 
 ---
 

@@ -6,8 +6,9 @@ Privacy Invariant: Raw training records never leave this class.
 
 import hashlib
 import numpy as np
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional, Tuple, List
 from ml.models.diagnostic_net import DiagnosticNetPure
+from ml.nebius import nebius_service
 
 
 class FederatedClient:
@@ -16,6 +17,7 @@ class FederatedClient:
     Performs local stochastic gradient descent on the global model,
     calculates weight deltas, computes cryptographic hashes, and prepares
     the computation witness required for zkML proof generation.
+    Integrated with NVIDIA Nemotron on Nebius Token Factory for edge data processing.
     """
 
     def __init__(
@@ -25,6 +27,7 @@ class FederatedClient:
         wallet_address: str,
         private_data: Tuple[np.ndarray, np.ndarray],
         compute_tier: str = "T4",  # "RTX4090", "A100", "T4", "EdgeDevice"
+        unstructured_narratives: Optional[List[Tuple[str, int]]] = None,
     ):
         self.client_id = client_id
         self.name = name
@@ -33,6 +36,51 @@ class FederatedClient:
         self._X_private, self._y_private = private_data
         self.compute_tier = compute_tier
         self.local_model = DiagnosticNetPure(seed=int(hashlib.md5(client_id.encode()).hexdigest()[:6], 16))
+        
+        # Nebius & NVIDIA Edge Processing Telemetry
+        self.nebius_stats = {
+            "processed_with_nvidia": False,
+            "model_used": nebius_service.MODEL_EDGE_DOMAIN,
+            "scrubbed_pii_count": 0,
+            "avg_extraction_latency_ms": 0.0,
+            "unstructured_narratives_count": 0,
+        }
+
+        # If unstructured clinical narratives were provided, process them via NVIDIA Nemotron
+        if unstructured_narratives:
+            self.ingest_unstructured_records(unstructured_narratives)
+
+    def ingest_unstructured_records(self, narratives: List[Tuple[str, int]], domain: str = "clinical_ehr"):
+        """
+        Processes raw clinical notes at the edge node using NVIDIA Nemotron on Nebius Token Factory.
+        Scrubs PII and extracts normalized 16-D biomarker feature tensors on-premise.
+        """
+        extracted_features = []
+        labels = []
+        total_pii = 0
+        latencies = []
+
+        for raw_text, label in narratives:
+            res = nebius_service.process_unstructured_record(
+                raw_text=raw_text,
+                model=nebius_service.MODEL_EDGE_DOMAIN,
+                domain=domain,
+            )
+            extracted_features.append(res["features"])
+            labels.append(label)
+            total_pii += res.get("scrubbed_pii_count", 0)
+            latencies.append(res.get("latency_ms", 0.0))
+
+        if extracted_features:
+            self._X_private = np.array(extracted_features, dtype=np.float32)
+            self._y_private = np.array(labels, dtype=np.int64)
+            self.nebius_stats = {
+                "processed_with_nvidia": True,
+                "model_used": nebius_service.MODEL_EDGE_DOMAIN,
+                "scrubbed_pii_count": total_pii,
+                "avg_extraction_latency_ms": round(sum(latencies) / max(1, len(latencies)), 2),
+                "unstructured_narratives_count": len(narratives),
+            }
 
     @property
     def num_samples(self) -> int:
@@ -111,6 +159,8 @@ class FederatedClient:
             # Metadata for zkML prover
             "sample_witness_input": sample_x.tolist(),
             "sample_witness_output": pred_logits.tolist(),
+            # NVIDIA & Nebius Edge Processing Telemetry
+            "nebius_telemetry": self.nebius_stats,
         }
 
     def update_dataset_and_model(self, private_data: Tuple[np.ndarray, np.ndarray], model_template):

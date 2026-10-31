@@ -17,41 +17,53 @@ if os.path.exists(dotenv_path):
 else:
     load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./network_state.db")
+DATABASE_URL = (os.getenv("DATABASE_URL") or "sqlite:///./network_state.db").strip().strip('"').strip("'")
 
 def _sanitize_database_url(url: str) -> str:
     """Safely normalizes PostgreSQL URLs and encodes special characters in passwords."""
     from urllib.parse import unquote, quote_plus
     
-    # Handle dialect prefix
+    url = url.strip().strip('"').strip("'")
+    if not url:
+        return "sqlite:///./network_state.db"
+
+    # Handle Postgres dialect prefix for SQLAlchemy 2.0+
     if url.startswith("postgres://"):
-        url = url.replace("postgres://", "postgresql+psycopg://", 1)
+        url = url.replace("postgres://", "postgresql+psycopg2://", 1)
     elif url.startswith("postgresql://") and not url.startswith("postgresql+"):
-        url = url.replace("postgresql://", "postgresql+psycopg://", 1)
+        url = url.replace("postgresql://", "postgresql+psycopg2://", 1)
 
     if not url.startswith("postgresql"):
         return url
 
     # Parse and safely URL-encode credentials if '@' exists in password
-    prefix = url.split("://")[0] + "://"
-    rest = url[len(prefix):]
-    if "@" in rest:
-        last_at = rest.rfind("@")
-        user_pass = rest[:last_at]
-        host_part = rest[last_at + 1:]
-        if ":" in user_pass:
-            user, pwd = user_pass.split(":", 1)
-            safe_pwd = quote_plus(unquote(pwd))
-            return f"{prefix}{user}:{safe_pwd}@{host_part}"
+    try:
+        prefix = url.split("://")[0] + "://"
+        rest = url[len(prefix):]
+        if "@" in rest:
+            last_at = rest.rfind("@")
+            user_pass = rest[:last_at]
+            host_part = rest[last_at + 1:]
+            if ":" in user_pass:
+                user, pwd = user_pass.split(":", 1)
+                safe_pwd = quote_plus(unquote(pwd))
+                return f"{prefix}{user}:{safe_pwd}@{host_part}"
+    except Exception:
+        pass
     return url
 
 DATABASE_URL = _sanitize_database_url(DATABASE_URL)
 
-# SQLite requires connect_args check_same_thread=False
-if DATABASE_URL.startswith("sqlite"):
+# Resilient engine creation with automatic SQLite fallback
+try:
+    if DATABASE_URL.startswith("sqlite"):
+        engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+    else:
+        engine = create_engine(DATABASE_URL, pool_pre_ping=True)
+except Exception as db_err:
+    print(f"[Database Warning] Could not connect to primary DATABASE_URL ({db_err}). Falling back to SQLite.")
+    DATABASE_URL = "sqlite:///./network_state.db"
     engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
-else:
-    engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

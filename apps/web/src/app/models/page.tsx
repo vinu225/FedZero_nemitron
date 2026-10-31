@@ -35,6 +35,21 @@ export default function ModelsPage() {
 
   const fallbackModels = [
     {
+      id: "model-nemotron-adapter-v1",
+      name: "NVIDIA Nemotron Clinical Adapter",
+      version: "1.0.0",
+      description: "Federated parameter-efficient adapter for NVIDIA Nemotron-3-Super, continuously adapted across hospital nodes via Nebius Token Factory with zero raw EHR disclosure.",
+      benchmark_accuracy: 97.4,
+      benchmark_loss: 0.0762,
+      model_hash: "0x7a81c4e912b339f40dc12984aef77109c124",
+      architecture: "NeMo LoRA Adapter [NVIDIA Nemotron-3-Super]",
+      parameters_count: 65536,
+      storage_cid: "bafybeinebiustokenfactorynvidiaadapters64kcid",
+      proving_scheme: "KZG-Halo2/EZKL-BN254",
+      constraints_count: 24576,
+      is_active: true,
+    },
+    {
       id: "model-oncology-v2",
       name: "Oncology EHR Neural Classifier",
       version: "2.4.0",

@@ -115,6 +115,14 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
               <span>{badgeText}</span>
               <ChevronDown className="w-3 h-3 opacity-60" />
             </button>
+
+            {/* Nebius x NVIDIA Nemotron Badge */}
+            <div className="hidden xl:flex items-center space-x-1.5 px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-[#141416] text-white border border-[#303030] shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse"></span>
+              <span className="text-[#A3E635]">NEBIUS</span>
+              <span className="text-gray-400">×</span>
+              <span className="text-white">NVIDIA NEMOTRON</span>
+            </div>
           </div>
 
           <div className="flex items-center space-x-2 sm:space-x-3">

@@ -1604,7 +1604,13 @@ export default function TrainingPage() {
       let tagStyle = "text-stone-300 bg-stone-900 border-stone-700";
       let msgStyle = "text-stone-300";
 
-      if (tagUpper.includes("DISPATCH") || tagUpper.includes("TOPOLOGY") || tagUpper.includes("DATA_CONFIG") || tagUpper.includes("INIT")) {
+      if (tagUpper.includes("NVIDIA") || tagUpper.includes("NEMOTRON") || tagUpper.includes("NEBIUS")) {
+        tagStyle = "text-[#A3E635] bg-[#A3E635]/15 border-[#A3E635]/40 font-bold";
+        msgStyle = "text-[#A3E635] font-semibold";
+      } else if (tagUpper.includes("GOVERNANCE") || tagUpper.includes("AUDIT") || tagUpper.includes("SECURITY_EVALUATION")) {
+        tagStyle = "text-emerald-400 bg-emerald-950/80 border-emerald-500/60 font-bold";
+        msgStyle = "text-emerald-200 font-bold";
+      } else if (tagUpper.includes("DISPATCH") || tagUpper.includes("TOPOLOGY") || tagUpper.includes("DATA_CONFIG") || tagUpper.includes("INIT")) {
         tagStyle = "text-[#E05338] bg-[#E05338]/10 border-[#E05338]/30";
         msgStyle = "text-stone-200 font-medium";
       } else if (tagUpper.includes("SGD") || tagUpper.includes("LOCAL_SGD")) {
@@ -1781,6 +1787,10 @@ export default function TrainingPage() {
                           <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-[#1C1917] text-white font-mono">Hardware Native</span>
                         </div>
                       )}
+                      <div className="text-[10px] font-mono font-bold px-2.5 py-1 rounded border flex items-center justify-between bg-emerald-50 text-emerald-800 border-emerald-300/80">
+                        <span>⚡ Ingestion: NVIDIA Nemotron-3-Super</span>
+                        <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-[#047857] text-white font-mono">Nebius Cloud</span>
+                      </div>
                     </div>
                   </div>
                 );

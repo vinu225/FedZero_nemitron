@@ -406,6 +406,16 @@ export default function ProvidersPage() {
                 </div>
               </div>
 
+              {/* NVIDIA Nemotron Edge Acceleration Badge */}
+              <div className="p-2 rounded-xl bg-emerald-50 border border-emerald-300/80 flex items-center justify-between text-[10px] font-mono">
+                <span className="text-emerald-900 font-bold flex items-center space-x-1">
+                  <span>⚡ NVIDIA Nemotron Engine</span>
+                </span>
+                <span className="text-emerald-700 font-semibold bg-emerald-100/80 px-2 py-0.5 rounded border border-emerald-300">
+                  Nebius Token Factory
+                </span>
+              </div>
+
               {/* Rewards Earned Strip */}
               <div className="p-2.5 rounded-xl bg-white border border-[#1C1917]/20 flex items-center justify-between text-xs font-mono">
                 <span className="text-[#78716C] font-bold text-[10px] uppercase flex items-center space-x-1">

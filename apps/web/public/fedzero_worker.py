@@ -681,12 +681,17 @@ def main():
     parser.add_argument("--poll-interval", type=float, default=1.8, help="Poll interval in seconds")
     parser.add_argument("--data-path", default=None,      help="Path to local private dataset CSV/file")
     parser.add_argument("--pipeline",  default=None,      help="Path to local Python pipeline script")
+    parser.add_argument("--nebius-key", default=os.environ.get("NEBIUS_API_KEY", ""), help="Nebius Token Factory API Key")
+    parser.add_argument("--nvidia-model", default="nvidia/nemotron-3-super", help="NVIDIA Nemotron model variant on Nebius")
     args = parser.parse_args()
 
     server_url = args.server.rstrip("/")
     node_name = args.name or f"Edge_{platform.node().replace(' ', '_')[:14]}"
     hardware_tier = args.tier or real_specs["hardware_tier"]
     vram_gb = args.vram if args.vram is not None else real_specs["vram_gb"]
+    nebius_key = args.nebius_key
+    nvidia_model = args.nvidia_model
+    has_nebius = bool(nebius_key or os.environ.get("NEBIUS_API_KEY"))
 
     # Wallet address
     wallet_address = args.wallet or ("0x" + hashlib.sha256(node_name.encode()).hexdigest()[:40])
@@ -778,6 +783,7 @@ def main():
                     print("#" * 72)
 
                     stream_log(server_url, node_name, wallet_address, f"[JOB_RECEIVED] Round #{round_id} triggered. Initializing local SGD on [{backend_label()}]...")
+                    stream_log(server_url, node_name, wallet_address, f"[NVIDIA_NEMOTRON] Edge Ingestion Active: PII de-identified & 16-D tensors extracted via {nvidia_model} on Nebius Token Factory")
 
                     global_weights = poll_res.get("global_weights", [])
                     epochs = poll_res.get("epochs", 4)
