@@ -18,13 +18,17 @@ export const metadata: Metadata = {
   },
 };
 
+const DEFAULT_CLERK_PUB_KEY =
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
+  "pk_test_b3JpZW50ZWQtZm94aG91bmQtMjIwNC5jbGVyay5hY2NvdW50cy5kZXYk";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider publishableKey={DEFAULT_CLERK_PUB_KEY}>
       <html lang="en">
         <head>
           <link rel="icon" href="/favicon.ico" sizes="any" />

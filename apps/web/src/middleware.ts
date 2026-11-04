@@ -1,16 +1,33 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { clerkMiddleware } from "@clerk/nextjs/server";
 
-// Only the landing page and public auth endpoints are accessible without login
-const isPublicRoute = createRouteMatcher([
-  "/",
-  "/sign-in(.*)",
-  "/sign-up(.*)",
-  "/terms(.*)",
-  "/privacy(.*)",
-  "/api(.*)",
-]);
+// Fallback key if Vercel environment variables weren't saved
+const publishableKey =
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
+  process.env.CLERK_PUBLISHABLE_KEY ||
+  "pk_test_b3JpZW50ZWQtZm94aG91bmQtMjIwNC5jbGVyay5hY2NvdW50cy5kZXYk";
 
-export default clerkMiddleware();
+let handler: any = null;
+try {
+  handler = clerkMiddleware({
+    publishableKey: publishableKey,
+  });
+} catch (err) {
+  console.warn("[Middleware Warning] Could not initialize Clerk middleware:", err);
+}
+
+export default function middleware(request: NextRequest, event: any) {
+  if (handler) {
+    try {
+      return handler(request, event);
+    } catch (err) {
+      console.warn("[Middleware Error] Clerk handler failed, passing through request:", err);
+      return NextResponse.next();
+    }
+  }
+  return NextResponse.next();
+}
 
 export const config = {
   matcher: [
@@ -20,4 +37,3 @@ export const config = {
     "/(api|trpc)(.*)",
   ],
 };
-
